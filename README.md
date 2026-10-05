@@ -17,12 +17,13 @@
 ## 실행
 
 ```bash
-cd date_request
+git clone https://github.com/SKN35shimsungwook/date-request.git
+cd date-request
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-> 핑크 테마(`.streamlit/config.toml`)는 `date_request` 폴더 안에서 실행해야 적용됩니다.
+> 핑크 테마(`.streamlit/config.toml`)는 저장소 루트에서 실행해야 적용됩니다. Streamlit Community Cloud에서는 자동 적용.
 
 ## 구조
 
