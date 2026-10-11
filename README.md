@@ -1,5 +1,7 @@
 # 💌 데이트 신청서
 
+**🔗 바로 실행해 보기:** https://date-request-yyk74nbiuqnjbdz7puz7vo.streamlit.app
+
 핑크 & 하트 테마의 귀여운 데이트 신청 Streamlit 앱.
 
 ## 흐름
