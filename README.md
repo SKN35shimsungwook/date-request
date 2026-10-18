@@ -2,7 +2,8 @@
 
 **🔗 바로 실행해 보기:** https://date-request-yyk74nbiuqnjbdz7puz7vo.streamlit.app
 
-핑크 & 하트 테마의 귀여운 데이트 신청 Streamlit 앱.
+데이트 신청을 그냥 메시지로 보내기보다 재밌게 해 보고 싶어서 만든 핑크 & 하트 테마의 Streamlit 앱입니다.
+'거절' 버튼이 도망가는 게 이 앱의 핵심 장난이라, 그 버튼은 Streamlit 위젯만으로는 안 돼서 HTML/JS 컴포넌트로 만들었습니다.
 
 ## 흐름
 
