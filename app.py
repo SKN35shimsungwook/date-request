@@ -52,6 +52,7 @@ PLAN_DEFAULTS = {
     "dessert": lambda: None,
     "custom_desserts": lambda: [],
     "message": lambda: "",
+    "skipped": lambda: [],  # 건너뛴 단계 이름 (확인서에 '만나서 정하자'로 표시)
 }
 for _k, _default in PLAN_DEFAULTS.items():
     ss[_k] = ss[_k] if _k in ss else _default()
@@ -59,6 +60,18 @@ for _k, _default in PLAN_DEFAULTS.items():
 
 def go(step: int) -> None:
     ss.step = step
+
+
+def go_next(name: str) -> None:
+    """다음: 이 단계를 정한 것으로 보고 건너뛰기 표시를 지운다."""
+    ss.skipped = [x for x in ss.skipped if x != name]
+    go(ss.step + 1)
+
+
+def skip(name: str) -> None:
+    if name not in ss.skipped:
+        ss.skipped = ss.skipped + [name]
+    go(ss.step + 1)
 
 
 def restart() -> None:
@@ -140,13 +153,14 @@ def progress() -> None:
     )
 
 
-def nav(next_disabled: bool = False) -> None:
-    left, right = st.columns(2)
+def nav(name: str, next_disabled: bool = False) -> None:
+    left, mid, right = st.columns(3)
     left.button("← 이전", on_click=go, args=(ss.step - 1,), width="stretch")
+    mid.button("건너뛰기 ⏭️", key=f"skip_{name}", on_click=skip, args=(name,), width="stretch")
     right.button(
         "다음 💕",
-        on_click=go,
-        args=(ss.step + 1,),
+        on_click=go_next,
+        args=(name,),
         type="primary",
         disabled=next_disabled,
         width="stretch",
@@ -282,7 +296,7 @@ def page_date() -> None:
         st.radio("몇 시가 좋아?", TIME_SLOTS, horizontal=True, key="time")
         if ss.time == CUSTOM_TIME:
             st.time_input("원하는 시간을 골라줘", step=dt.timedelta(minutes=10), key="custom_time")
-    nav()
+    nav("date")
 
 
 def time_text() -> str:
@@ -348,7 +362,7 @@ def page_food() -> None:
         custom_input("✏️ 먹고 싶은 게 따로 있어?", "예) 마라탕, 쌀국수", "new_food", None, "food", multi=False)
         if ss.food and ss.food not in FOODS:
             st.markdown(f"<p style='text-align:center'>💖 <b>{escape(ss.food)}</b> 선택됨!</p>", unsafe_allow_html=True)
-    nav(next_disabled=not ss.food)
+    nav("food", next_disabled=not ss.food)
 
 
 def page_place() -> None:
@@ -362,7 +376,7 @@ def page_place() -> None:
             key="places",
         )
         custom_input("✏️ 가고 싶은 데 직접 추가", "예) 보드게임 카페, 한강 피크닉", "new_place", "custom_places", "places", multi=True)
-    nav(next_disabled=not ss.places)
+    nav("places", next_disabled=not ss.places)
 
 
 def page_dessert() -> None:
@@ -377,7 +391,15 @@ def page_dessert() -> None:
             max_chars=200,
             key="message",
         )
-    nav(next_disabled=not ss.dessert)
+    nav("dessert", next_disabled=not ss.dessert)
+
+
+UNDECIDED = "만나서 정하자 🤔"
+
+
+def decided(name: str, value: str | None) -> str:
+    """건너뛰었거나 비어 있으면 '만나서 정하자'."""
+    return UNDECIDED if name in ss.skipped or not value else value
 
 
 def plan_text() -> str:
@@ -385,11 +407,11 @@ def plan_text() -> str:
     lines = [
         "💖 데이트 확인서 💖",
         "",
-        f"📅 날짜 : {d.year}년 {d.month}월 {d.day}일 ({'월화수목금토일'[d.weekday()]})",
-        f"⏰ 시간 : {time_text()}",
-        f"🍽️ 식사 : {ss.food}",
-        f"🗺️ 코스 : {' → '.join(ss.places)}",
-        f"🍰 디저트 : {ss.dessert}",
+        f"📅 날짜 : {decided('date', f'{d.year}년 {d.month}월 {d.day}일 (' + '월화수목금토일'[d.weekday()] + ')')}",
+        f"⏰ 시간 : {decided('date', time_text())}",
+        f"🍽️ 식사 : {decided('food', ss.food)}",
+        f"🗺️ 코스 : {decided('places', ' → '.join(ss.places))}",
+        f"🍰 디저트 : {decided('dessert', ss.dessert)}",
     ]
     if ss.message.strip():
         lines += ["", f"💬 한마디 : {ss.message.strip()}"]
